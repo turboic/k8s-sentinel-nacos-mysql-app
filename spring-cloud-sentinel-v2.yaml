@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-cloud-sentinel-v2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-cloud-sentinel-v2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: spring-cloud-sentinel-v2
+        release: default
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: spring-cloud-sentinel-v2
+        image: zhxl1989/spring-cloud-sentinel-v2:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9999
+          name: http
+        resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: volume-localtime
+      volumes:
+        - hostPath:
+            path: /etc/localtime
+            type: ''
+          name: volume-localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-cloud-sentinel-v2
+  namespace: default
+  labels:
+    service: spring-cloud-sentinel-v2
+spec:
+  ports:
+    - name: http
+      port: 9999
+      protocol: TCP
+      targetPort: 9999
+      nodePort: 30999
+  selector:
+    app: spring-cloud-sentinel-v2
+  type: NodePort

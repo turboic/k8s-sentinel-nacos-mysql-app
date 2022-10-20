@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-nacos-provider
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentinel-nacos-provider
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: sentinel-nacos-provider
+        release: default
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: sentinel-nacos-provider
+        image: zhxl1989/sentinel-nacos-provider:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8082
+          name: http
+        resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: volume-localtime
+      volumes:
+        - hostPath:
+            path: /etc/localtime
+            type: ''
+          name: volume-localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-nacos-provider
+  namespace: default
+  labels:
+    service: sentinel-nacos-provider
+spec:
+  ports:
+    - name: http
+      port: 8082
+      protocol: TCP
+      targetPort: 8082
+      nodePort: 30882
+  selector:
+    app: sentinel-nacos-provider
+  type: NodePort
