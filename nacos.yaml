@@ -9,13 +9,21 @@ spec:
   type: NodePort
   ports:
     - port: 8848
-      name: server
+      name: nacos
       targetPort: 8848
       nodePort: 30218
     - port: 7848
       name: rpc
       targetPort: 7848
       nodePort: 30219
+    - port: 9848
+      name: client
+      targetPort: 9848
+      nodePort: 30220
+    - port: 9849
+      name: server
+      targetPort: 9849
+      nodePort: 30221
   selector:
     app: nacos
 ---
@@ -29,11 +37,17 @@ metadata:
 spec:
   ports:
     - port: 8848
-      name: server
+      name: nacos
       targetPort: 8848
     - port: 7848
       name: rpc
       targetPort: 7848
+    - port: 9848
+      name: client
+      targetPort: 9848
+    - port: 9849
+      name: server
+      targetPort: 9849
   clusterIP: None
   selector:
     app: nacos
@@ -86,9 +100,13 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 8848
-              name: client-port
+              name: nacos
             - containerPort: 7848
               name: rpc
+            - containerPort: 9848
+              name: client
+            - containerPort: 9849
+              name: server
           env:
             - name: NACOS_REPLICAS
               value: "1"
